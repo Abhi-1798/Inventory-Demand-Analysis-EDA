@@ -25,6 +25,7 @@ category_options = st.sidebar.multiselect("Select Category", options=sorted(df["
 region_options = st.sidebar.multiselect("Select Region", options=sorted(df["Region"].unique()), default=sorted(df["Region"].unique()))
 weather_options = st.sidebar.multiselect("Select Weather Condition", options=sorted(df["Weather Condition"].unique()), default=sorted(df["Weather Condition"].unique()))
 season_options = st.sidebar.multiselect("Select Seasonality", options=sorted(df["Seasonality"].unique()), default=sorted(df["Seasonality"].unique()))
+stock_status = st.sidebar.multiselect("Select Stock Status", options=sorted(df["Stock Status"].unique()), default=sorted(df["Stock Status"].unique()))
 date_range = st.sidebar.date_input("Select Date Range", [df["Date"].min(), df["Date"].max()])
 
 # Filter data
@@ -33,6 +34,7 @@ filtered_df = df[
     (df["Region"].isin(region_options)) &
     (df["Weather Condition"].isin(weather_options)) &
     (df["Seasonality"].isin(season_options)) &
+    (df["Stock Status"].isin(stock_status)) &
     (df["Date"] >= pd.to_datetime(date_range[0])) &
     (df["Date"] <= pd.to_datetime(date_range[1]))
 ]
@@ -58,7 +60,9 @@ region_sales = filtered_df.groupby('Region')['Units Sold'].sum()
 st.plotly_chart(px.pie(names=region_sales.index, values=region_sales.values,
                        title='Sales Distribution by Region'), use_container_width=True)
 
-
+st.subheader("📦 Stock Status Distribution Over Time")
+st.plotly_chart(px.histogram(df, x='Date', color='Stock Status',
+                        title='Stock Status Distribution', barmode='stack'), use_container_width=True)
 
 st.subheader("📊 Demand Forecast vs Actual Sales")
 st.plotly_chart(px.scatter(filtered_df, x='Demand Forecast', y='Units Sold',
