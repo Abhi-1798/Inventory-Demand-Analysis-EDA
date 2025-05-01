@@ -64,6 +64,11 @@ st.subheader("📦 Stock Status Distribution Over Time")
 st.plotly_chart(px.histogram(df, x='Date', color='Stock Status',
                         title='Stock Status Distribution', barmode='stack'), use_container_width=True)
 
+st.subheader("❌ Stock-Out Frequency Over Time")
+stock_out_df = df[df['Stock Status'] == 'Stockout']
+st.plotly_chart(px.histogram(stock_out_df, x='Date',
+                        title='❌ Stock-Out Frequency'), use_container_width=True)
+
 st.subheader("📊 Demand Forecast vs Actual Sales")
 st.plotly_chart(px.scatter(filtered_df, x='Demand Forecast', y='Units Sold',
                            title="Demand Forecast vs Actual Sales", trendline="ols"), use_container_width=True)
@@ -83,3 +88,31 @@ season_sales = filtered_df.groupby('Seasonality')['Units Sold'].mean().sort_valu
 st.plotly_chart(px.bar(season_sales, x=season_sales.index, y=season_sales.values,
                        title='Seasonality vs Units Sold',
                        labels={'x': 'Seasonality', 'y': 'Average Units Sold'}), use_container_width=True)
+
+st.subheader("📆 Units Sold by Month and Day of Week")
+weekday_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+month_order = ['January', 'February', 'March', 'April', 'May', 'June',
+               'July', 'August', 'September', 'October', 'November', 'December']
+df['Weekday'] = pd.Categorical(df['Date'].dt.day_name(), categories=weekday_order, ordered=True)
+df['Month'] = pd.Categorical(df['Date'].dt.month_name(), categories=month_order, ordered=True)
+heat_data = df.groupby(['Month', 'Weekday'])['Units Sold'].sum().unstack()
+st.plotly_chart(px.imshow(heat_data, 
+                          title='Units Sold by Month and Day of Week', aspect="auto", 
+                          labels=dict(color="Units Sold")), use_container_width=True)
+
+st.subheader("💹 Revenue Over Time")
+st.plotly_chart(px.line(df, x='Date', y='Revenue', title='💹 Revenue Over Time'), use_container_width=True)
+
+st.subheader("📆 Monthly Revenue Trend")
+df['Month'] = df['Date'].dt.to_period('M').astype(str)
+monthly_rev = df.groupby('Month')['Revenue'].sum().reset_index()
+monthly_rev['Month'] = pd.to_datetime(monthly_rev['Month'])
+monthly_rev = monthly_rev.sort_values('Month')
+monthly_rev['Month'] = monthly_rev['Month'].dt.strftime('%b %Y')
+st.plotly_chart(px.bar(monthly_rev, x='Month', y='Revenue',
+                            title='Monthly Revenue Trend'), use_container_width=True)
+
+st.subheader("💸 Revenue vs Discount")
+st.plotly_chart(px.scatter(df, x='Discount', y='Revenue',
+                            title='Revenue vs Discount Trend Line', trendline='ols'), use_container_width=True)
+
